@@ -1,0 +1,18 @@
+[package]
+name = "package_test"
+version = "0.1.0"
+description = "Integration test for zorbs.io — verifies serde and tokio resolve, download, and compile"
+authors = ["Roy Murphy <roy@z-lang.org>"]
+license = "MIT"
+
+[dependencies]
+@data/serde = "^0.4.0"
+@async/tokio = "^0.3.10"
+
+[fmt]
+style = "zeta-strict"
+max_width = 100
+
+[lint]
+tool = "zippy"
+level = "pedantic"

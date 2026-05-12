@@ -1,0 +1,84 @@
+// package_test/src/main.z
+// Integration test for zorbs.io
+// Tests that @data/serde (JSON serialization) and @async/tokio (async runtime)
+// resolve, download, and compile correctly through the Zorbs package manager.
+
+use @data/serde::json;
+use @async/tokio::runtime::Runtime;
+use @async/tokio::sync::semaphore::Semaphore;
+use @async/tokio::time;
+
+// ─── Serde Test ──────────────────────────────────────────────────────────
+
+fn test_serialize_person(name: [256]i64, age: i64, active: i64) {
+    json::json_begin();  // {
+
+    json::json_kv_str("name", name);
+    json::json_comma();
+
+    json::json_kv_i64("age", age);
+    json::json_comma();
+
+    json::json_kv_bool("active", active);
+    json::json_end();  // }
+}
+
+fn test_serialize_simple() -> i64 {
+    let name: [256]i64 = "Bob\0";
+
+    // Just verify the functions exist and compile
+    test_serialize_person(name, 42, 1);
+    return 1;
+}
+
+// ─── Tokio Runtime Test ──────────────────────────────────────────────────
+
+fn test_runtime_create() -> i64 {
+    let rt = Runtime::new();
+    if rt.worker_count() > 0 {
+        return 1;
+    }
+    return 0;
+}
+
+// ─── Tokio Semaphore Test ────────────────────────────────────────────────
+
+fn test_semaphore_create() -> i64 {
+    let sem = Semaphore::new(3);
+    let available = sem.available_permits();
+
+    // Should have all 3 permits initially
+    if (available == 3) {
+        return 1;
+    }
+    return 0;
+}
+
+// ─── Tokio Timer Test ────────────────────────────────────────────────────
+
+fn test_timer_duration() -> i64 {
+    let dur = time::millis(1000);
+    let ms = dur.as_millis();
+
+    if (ms >= 1000) {
+        return 1;
+    }
+    return 0;
+}
+
+// ─── Main — runs all tests, returns pass count ──────────────────────────
+
+fn main() -> i64 {
+    let mut passed: i64 = 0;
+
+    // Serde
+    passed = passed + test_serialize_simple();
+
+    // Tokio
+    passed = passed + test_runtime_create();
+    passed = passed + test_semaphore_create();
+    passed = passed + test_timer_duration();
+
+    // Return number of tests passed (4 = all green)
+    return passed;
+}
